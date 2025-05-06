@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find the Richest Person With Your Name</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        input {
+            padding: 10px;
+            width: 60%;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #results {
+            margin-top: 30px;
+            text-align: left;
+            display: none;
+        }
+        .person {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+        }
+        .person:last-child {
+            border-bottom: none;
+        }
+        .name {
+            font-weight: bold;
+            font-size: 18px;
+            color: #2c3e50;
+        }
+        .net-worth {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .no-results {
+            color: #7f8c8d;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Find the Richest Person With Your Name</h1>
+        <p>Enter your name to see if there's a billionaire who shares it!</p>
+        
+        <div>
+            <input type="text" id="nameInput" placeholder="Enter your first or last name">
+            <button id="searchButton">Search</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Hardcoded list of the richest people (2023 data)
+        const billionaires = [
+        
+    {
+        "personName": "Elon Musk",
+        "rank": 1,
+        "finalWorth": 331000,
+        "source": "Tesla, SpaceX",
+        "countryOfCitizenship": "United States"
+    },
+    {
+        "personName": "Mark Zuckerberg",
+        "rank": 2,
+        "finalWorth": 212000,
+        "source": "Meta",
+        "countryOfCitizenship": "United States"
+    },
+    {
+        "personName": "Jeff Bezos",
+        "rank": 3,
+        "finalWorth": 209000,
+        "source": "Amazon",
+        "countryOfCitizenship": "United States"
+    },
+    {
+        "personName": "Larry Ellison",
+        "rank": 4,
+        "finalWorth": 172000,
+        "source": "Oracle",
+        "countryOfCitizenship": "United States"
+    },
+    {
+        "personName": "Bill Gates",
+        "rank": 5,
+        "finalWorth": 169000,
+        "source": "Microsoft",
+        "countryOfCitizenship": "United States"
+    },
+    {
+        "personName": "Warren Buffett",
+        "rank": 6,
+        "finalWorth": 160000,
+        "source": "Berkshire Hathaway",
+        "countryOfCitizenship": "United States"
+    },
+    {
+        "personName": "Bernard Arnault",
+        "rank": 7,
+        "finalWorth": 155000,
+        "source": "LVMH",
+        "countryOfCitizenship": "France"
+    },
+    {
+        "personName": "Steve Ballmer",
+        "rank": 8,
+        "finalWorth": 152000,
+        "source": "Microsoft",
+        "countryOfCitizenship": "United States"
+    },
+    {
+        "personName": "Larry Page",
+        "rank": 9,
+        "finalWorth": 149000,
+        "source": "Google",
+        "countryOfCitizenship": "United States"
+    },
+    {
+        "personName": "Sergey Brin",
+        "rank": 10,
+        "finalWorth": 140000,
+        "source": "Google",
+        "countryOfCitizenship": "United States"
+    },
+    {
+        "personName": "Jim Walton",
+        "rank": 11,
+        "finalWorth": 121000,
+        "source": "Walmart",
+        "countryOfCitizenship": "United States"
+    },
+    {
+        "personName": "Rob Walton",
+        "rank": 12,
+        "finalWorth": 118000,
+        "source": "Walmart",
+        "countryOfCitizenship": "United States"
+    },
+    {
+        "personName": "Alice Walton",
+        "rank": 13,
+        "finalWorth": 118000,
+        "source": "Walmart",
+        "countryOfCitizenship": "United States"
+    },
+    {
+        "personName": "Michael Dell",
+        "rank": 14,
+        "finalWorth": 109000,
+        "source": "Dell Technologies",
+        "countryOfCitizenship": "United States"
+    },
+    {
+        "personName": "Amancio Ortega",
+        "rank": 15,
+        "finalWorth": 107000,
+        "source": "Inditex (Zara)",
+        "countryOfCitizenship": "Spain"
+    },
+    {
+        "personName": "Mukesh Ambani",
+        "rank": 16,
+        "finalWorth": 104000,
+        "source": "Reliance Industries",
+        "countryOfCitizenship": "India"
+    },
+    {
+        "personName": "Jensen Huang",
+        "rank": 17,
+        "finalWorth": 99900,
+        "source": "NVIDIA",
+        "countryOfCitizenship": "United States"
+    },
+    {
+        "personName": "Francoise Bettencourt Meyers",
+        "rank": 18,
+        "finalWorth": 91400,
+        "source": "L'Oréal",
+        "countryOfCitizenship": "France"
+    },
+    {
+        "personName": "Carlos Slim",
+        "rank": 19,
+        "finalWorth": 91100,
+        "source": "América Móvil",
+        "countryOfCitizenship": "Mexico"
+    },
+    {
+        "personName": "Gautam Adani",
+        "rank": 20,
+        "finalWorth": 82200,
+        "source": "Adani Group",
+        "countryOfCitizenship": "India"
+    },
+    {
+        "personName": "Julia Flesher Koch & family",
+        "rank": 21,
+        "finalWorth": 72400,
+        "source": "Koch Industries",
+        "countryOfCitizenship": "United States"
+    },
+    {
+        "personName": "Charles Koch",
+        "rank": 22,
+        "finalWorth": 65800,
+        "source": "Koch Industries",
+        "countryOfCitizenship": "United States"
+    },
+    {
+        "personName": "Jeff Yass",
+        "rank": 23,
+        "finalWorth": 60700,
+        "source": "Citadel",
+        "countryOfCitizenship": "United States"
+    },
+    {
+        "personName": "Zhang Yiming",
+        "rank": 24,
+        "finalWorth": 57500,
+        "source": "ByteDance",
+        "countryOfCitizenship": "China"
+    },
+    {
+        "personName": "Zhong Shanshan",
+        "rank": 25,
+        "finalWorth": 57000,
+        "source": "Nongfu Spring",
+        "countryOfCitizenship": "China"
+    },
+    {
+        "personName": "Ma Huateng",
+        "rank": 26,
+        "finalWorth": 54700,
+        "source": "Tencent",
+        "countryOfCitizenship": "China"
+    },
+    {
+        "personName": "Thomas Peterffy",
+        "rank": 27,
+        "finalWorth": 54300,
+        "source": "Interactive Brokers",
+        "countryOfCitizenship": "United States"
+    },
+    {
+        "personName": "Tadashi Yanai",
+        "rank": 28,
+        "finalWorth": 50200,
+        "source": "Fast Retailing",
+        "countryOfCitizenship": "Japan"
+    },
+    {
+        "personName": "Giovanni Ferrero & family",
+        "rank": 29,
+        "finalWorth": 49700,
+        "source": "Ferrero",
+        "countryOfCitizenship": "Italy"
+    },
+    {
+        "personName": "Jacqueline Badger Mars",
+        "rank": 30,
+        "finalWorth": 45800,
+        "source": "Mars",
+        "countryOfCitizenship": "United States"
+    },
+    {
+        "personName": "John Mars",
+        "rank": 31,
+        "finalWorth": 45800,
+        "source": "Mars",
+        "countryOfCitizenship": "United States"
+    },
+    {
+    personName: "Stephen Schwarzman",
+    rank: 32,
+    finalWorth: 45800,
+    source: "Finance",
+    countryOfCitizenship: "United States"
+},
+{
+    personName: "Lei Jun",
+    rank: 33,
+    finalWorth: 44400,
+    source: "Technology",
+    countryOfCitizenship: "China"
+},
+{
+    personName: "Ken Griffin",
+    rank: 34,
+    finalWorth: 41800,
+    source: "Finance",
+    countryOfCitizenship: "United States"
+},
+{
+    personName: "Lukas Walton",
+    rank: 35,
+    finalWorth: 41500,
+    source: "Retail",
+    countryOfCitizenship: "United States"
+},
+{
+    personName: "Alain Wertheimer",
+    rank: 36,
+    finalWorth: 41400,
+    source: "Consumer",
+    countryOfCitizenship: "France"
+},
+{
+    personName: "Gerard Wertheimer",
+    rank: 37,
+    finalWorth: 41300,
+    source: "Consumer",
+    countryOfCitizenship: "France"
+},
+{
+    personName: "Klaus-Michael Kuehne",
+    rank: 38,
+    finalWorth: 40100,
+    source: "Industrial",
+    countryOfCitizenship: "Germany"
+},
+{
+    personName: "Colin Huang",
+    rank: 39,
+    finalWorth: 39000,
+    source: "Technology",
+    countryOfCitizenship: "China"
+},
+{
+    personName: "Jack Ma",
+    rank: 40,
+    finalWorth: 39000,
+    source: "Technology",
+    countryOfCitizenship: "China"
+},
+{
+    personName: "Abigail Johnson",
+    rank: 41,
+    finalWorth: 38300,
+    source: "Finance",
+    countryOfCitizenship: "United States"
+},
+{
+    personName: "Len Blavatnik",
+    rank: 42,
+    finalWorth: 38000,
+    source: "Diversified",
+    countryOfCitizenship: "United States"
+},
+{
+    personName: "Shiv Nadar",
+    rank: 43,
+    finalWorth: 37200,
+    source: "Technology",
+    countryOfCitizenship: "India"
+},
+{
+    personName: "German Larrea",
+    rank: 44,
+    finalWorth: 35600,
+    source: "Commodities",
+    countryOfCitizenship: "Mexico"
+},
+{
+    personName: "MacKenzie Scott",
+    rank: 45,
+    finalWorth: 35600,
+    source: "Technology",
+    countryOfCitizenship: "United States"
+},
+{
+    personName: "William Ding",
+    rank: 46,
+    finalWorth: 35000,
+    source: "Technology",
+    countryOfCitizenship: "China"
+},
+{
+    personName: "Shapoor Mistry",
+    rank: 47,
+    finalWorth: 34900,
+    source: "Industrial",
+    countryOfCitizenship: "India"
+},
+{
+    personName: "Dieter Schwarz",
+    rank: 48,
+    finalWorth: 34800,
+    source: "Retail",
+    countryOfCitizenship: "Germany"
+},
+{
+    personName: "Zeng Yuqun",
+    rank: 49,
+    finalWorth: 34600,
+    source: "Industrial",
+    countryOfCitizenship: "Hong Kong"
+},
+{
+    personName: "He Xiangjian",
+    rank: 50,
+    finalWorth: 32600,
+    source: "Consumer",
+    countryOfCitizenship: "China"
+}
+
+        ];
+
+        document.getElementById('searchButton').addEventListener('click', searchBillionaires);
+        document.getElementById('nameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchBillionaires();
+            }
+        });
+
+        function searchBillionaires() {
+            const nameInput = document.getElementById('nameInput').value.trim();
+            const resultsDiv = document.getElementById('results');
+            
+            if (!nameInput) {
+                showError("Please enter a name to search");
+                return;
+            }
+            
+            // Clear previous results
+            resultsDiv.innerHTML = '';
+            resultsDiv.style.display = 'none';
+            
+            // Filter billionaires whose first or last name includes the search term (case insensitive)
+            const searchTerm = nameInput.toLowerCase();
+                const matches = billionaires.filter(person => {
+                const regex = new RegExp(`\\b${searchTerm}\\b`, 'i'); // 'i' makes it case-insensitive
+                return regex.test(person.personName.toLowerCase());
+            });
+            
+            // Sort by net worth (descending)
+            matches.sort((a, b) => parseFloat(b.finalWorth) - parseFloat(a.finalWorth));
+            
+            resultsDiv.style.display = 'block';
+            
+            if (matches.length === 0) {
+                resultsDiv.innerHTML = `<p class="no-results">No billionaires found with a name containing "${nameInput}". Maybe you'll be the first!</p>`;
+                return;
+            }
+            
+            // Display the richest match first
+            const richest = matches[0];
+            resultsDiv.innerHTML = `
+                <h2>Richest person with a name like "${nameInput}":</h2>
+                <div class="person">
+                    <div class="name">${richest.personName}</div>
+                    <div>Rank: #${richest.rank}</div>
+                    <div>Net Worth: <span class="net-worth">$${(richest.finalWorth / 1000).toFixed(1)} billion</span></div>
+                    <div>Source: ${richest.source}</div>
+                    <div>Country: ${richest.countryOfCitizenship}</div>
+                </div>
+            `;
+            
+            // Show all matches if there are more
+            if (matches.length > 1) {
+                resultsDiv.innerHTML += `<h3>Other billionaires with similar names:</h3>`;
+                matches.slice(1).forEach(person => {
+                    resultsDiv.innerHTML += `
+                        <div class="person">
+                            <div class="name">${person.personName}</div>
+                            <div>Rank: #${person.rank}</div>
+                            <div>Net Worth: <span class="net-worth">$${(person.finalWorth / 1000).toFixed(1)} billion</span></div>
+                        </div>
+                    `;
+                });
+            }
+        }
+        
+        function showError(message) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<p class="error">${message}</p>`;
+            resultsDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
